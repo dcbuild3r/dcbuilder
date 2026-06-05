@@ -5,6 +5,7 @@
   "type": "module",
   "private": true,
   "bin": {
+    "dcli": "./src/bin/dcbuilder.ts",
     "dcbuilder": "./src/bin/dcbuilder.ts",
     "dcbuilder-mcp": "./src/bin/dcbuilder-mcp.ts"
   },
