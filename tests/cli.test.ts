@@ -59,14 +59,41 @@ describe("runCli", () => {
     });
   });
 
-  test("fails cleanly when credentials are missing", async () => {
+  test("fails cleanly when credentials are missing and 1Password fallback is unavailable", async () => {
     const result = await runCli(["jobs"], {
-      env: { DCBUILDER_API_URL: "https://api.example.test" },
+      env: {},
       fetch: async () => Response.json({ unreachable: true }),
+      readSecret: async () => {
+        throw new Error("op unavailable");
+      },
     });
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain("DCBUILDER_API_URL and DCBUILDER_API_TOKEN");
+    expect(result.stderr).toContain("op unavailable");
+  });
+
+  test("uses default API URL and 1Password fallback token when env is missing", async () => {
+    const requests: Request[] = [];
+    const secretCalls: string[][] = [];
+    const result = await runCli(["jobs", "--limit", "1"], {
+      env: {},
+      fetch: async (input, init) => {
+        requests.push(new Request(input, init));
+        return Response.json({ data: [] });
+      },
+      readSecret: async (command) => {
+        secretCalls.push(command);
+        return "op-token";
+      },
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(requests[0].url).toBe("https://dcbuilder.dev/api/agent/jobs?limit=1");
+    expect(requests[0].headers.get("authorization")).toBe("Bearer op-token");
+    expect(requests[0].headers.get("x-api-key")).toBe("op-token");
+    expect(secretCalls).toEqual([
+      ["op", "read", "op://Agents/DCBUILDER_API_TOKEN/credential"],
+    ]);
   });
 
   test("allows public message submissions without an API token", async () => {

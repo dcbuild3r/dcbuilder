@@ -17,11 +17,28 @@ The package is private and is not published yet.
 
 ## Credentials
 
-Set credentials in the process environment:
+By default, the CLI uses:
 
 ```bash
-export DCBUILDER_API_URL="https://dcbuilder.dev"
+DCBUILDER_API_URL=https://dcbuilder.dev
+```
+
+For authenticated commands, set a token in the process environment:
+
+```bash
 export DCBUILDER_API_TOKEN="..."
+```
+
+If `DCBUILDER_API_TOKEN` is missing, local CLI runs fall back to 1Password CLI:
+
+```bash
+op read op://Agents/DCBUILDER_API_TOKEN/credential
+```
+
+Override the 1Password item reference when needed:
+
+```bash
+export DCBUILDER_1PASSWORD_TOKEN_REF="op://Vault/Item/field"
 ```
 
 Tokens should stay in your shell, secret manager, or agent runtime environment.

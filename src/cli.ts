@@ -1,6 +1,7 @@
 import { ApiError, DcbuilderApiClient } from "./api-client.ts";
 import type { FetchLike } from "./api-client.ts";
-import { resolveApiUrl, resolveCredentials } from "./config.ts";
+import { resolveApiUrl, resolveCredentialsWithFallback } from "./config.ts";
+import type { CredentialFallbackOptions } from "./config.ts";
 import { formatOutput } from "./format.ts";
 import { parseNaturalQuery } from "./nl.ts";
 import type {
@@ -17,6 +18,7 @@ import type {
 type CliOptions = {
   env?: Env;
   fetch?: FetchLike;
+  readSecret?: CredentialFallbackOptions["readSecret"];
 };
 
 type CliResult = {
@@ -43,7 +45,9 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
       };
     }
 
-    const credentials = resolveCliCredentials(parsed, options.env);
+    const credentials = await resolveCliCredentials(parsed, options.env, {
+      readSecret: options.readSecret,
+    });
     const client = new DcbuilderApiClient(credentials, { fetch: options.fetch });
     const data = await dispatch(parsed, client);
 
@@ -129,12 +133,16 @@ function dispatchSubmit(
   return client.submit(kind, payload);
 }
 
-function resolveCliCredentials(parsed: ParsedArgs, env: Env | undefined) {
+async function resolveCliCredentials(
+  parsed: ParsedArgs,
+  env: Env | undefined,
+  options: CredentialFallbackOptions,
+) {
   if (isPublicMessageSubmission(parsed) && !env?.DCBUILDER_API_TOKEN?.trim()) {
     return { apiUrl: resolveApiUrl(env) };
   }
 
-  return resolveCredentials(env);
+  return resolveCredentialsWithFallback(env, options);
 }
 
 function isPublicMessageSubmission(parsed: ParsedArgs): boolean {
