@@ -1,0 +1,8 @@
+#!/usr/bin/env bun
+import { runCli } from "../cli.ts";
+
+const result = await runCli(Bun.argv.slice(2), { env: Bun.env });
+
+if (result.stdout) process.stdout.write(result.stdout);
+if (result.stderr) process.stderr.write(result.stderr);
+process.exit(result.exitCode);

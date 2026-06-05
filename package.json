@@ -1,0 +1,22 @@
+{
+  "name": "@dcbuild3r/dcbuilder",
+  "version": "0.0.0",
+  "description": "Bun-native CLI and local MCP server for the dcbuilder.dev agent API.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "dcbuilder": "./src/bin/dcbuilder.ts",
+    "dcbuilder-mcp": "./src/bin/dcbuilder-mcp.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.13.0"
+  }
+}
